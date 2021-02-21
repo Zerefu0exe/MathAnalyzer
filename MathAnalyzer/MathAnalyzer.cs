@@ -217,6 +217,7 @@ namespace MathAnalyzerSpace
                     }
                 }
             }
+
             st = true;
             return SolutionNum(str);
         }
