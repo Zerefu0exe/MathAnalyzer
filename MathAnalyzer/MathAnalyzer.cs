@@ -36,9 +36,41 @@ namespace MathAnalyzerSpace
             }
         }
 
+        private static string NegativeNumbers(string str)
+        {
+            bool dobChar = false;
+
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (!IsNumber(str[i]) && (str[i] != '(' || str[i] != ')'))
+                {
+                    if (dobChar)
+                    {
+                        str = $"{str.Substring(0, i)}&{str.Substring(i + 1)}";
+                        dobChar = false;
+                        continue;
+                    }
+                    dobChar = true;
+                }
+                else
+                {
+                    dobChar = false;
+                }
+            }
+            return str;
+        }
+
+        private static string UnNegativeNumbers(string str)
+        {
+            return str[0] == '&' ? $"-{str.Substring(1)}" : str;
+        }
+
         private static string CalculateStr(string str, char ch)
         {
             string[] meta = str.Split(new char[4] { '+', '-', '*', '/' });
+            meta[0] = UnNegativeNumbers(meta[0]);
+            meta[1] = UnNegativeNumbers(meta[1]);
+
             switch (ch)
             {
                 case '+': return Convert.ToString(Convert.ToDouble(meta[0]) + Convert.ToDouble(meta[1]));
@@ -90,11 +122,11 @@ namespace MathAnalyzerSpace
                 }
             }
 
-            for (int t = i + 2; t < str.Length - 1; t++)
+            for (int t = i + 2; t <= str.Length; t++)
             {
-                if (t == str.Length - 1)
+                if (t == str.Length)
                 {
-                    str = str.Insert(str.Length - 1, ")");
+                    str = str.Insert(str.Length, ")");
                     break;
                 }
                 switch (str[t])
@@ -170,9 +202,10 @@ namespace MathAnalyzerSpace
             return str;
         }
 
-        private static string LonelinessTest(string str)
+        private static string LonelinessTest(string str, out bool st)
         {
             int notNumber = 0;
+            st = false;
 
             for (int i = 0; i < str.Length; i++)
             {
@@ -184,6 +217,8 @@ namespace MathAnalyzerSpace
                     }
                 }
             }
+
+            st = true;
             return SolutionNum(str);
         }
 
@@ -191,17 +226,17 @@ namespace MathAnalyzerSpace
         {
             int start = 0;
             bool stOfSo = false;
-            bool completed;
+
+            str = NegativeNumbers(str);
 
             while (!IsNumber(str))
             {
-                completed = false;
                 str = Delimiter(str);
-                str = LonelinessTest(str);
+                str = LonelinessTest(str, out bool completed);
 
                 for (int i = 0; i < str.Length; i++)
                 {
-                    switch (str[i])// break
+                    switch (str[i])
                     {
                         case '(':
                             start = i;
@@ -210,17 +245,17 @@ namespace MathAnalyzerSpace
                         case ')':
                             if (stOfSo)
                             {
-                                str = str.Substring(0, start) + SolutionNum(str.Substring(start + 1, i - start - 1)) + str.Substring(i + 1);
+                                str = $"{str.Substring(0, start)}{SolutionNum(str.Substring(start + 1, i - start - 1))}{str.Substring(i + 1)}";
+                                str = NegativeNumbers(str);
                                 stOfSo = false;
-                                completed = true;
                             }
                             break;
                         default: break;
                     }
-                    if (completed)
-                    {
-                        break;
-                    }
+                }
+                if (completed)
+                {
+                    break;
                 }
             }
             return str;
